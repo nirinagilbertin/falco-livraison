@@ -1,5 +1,6 @@
 const { Router } = require('express');
 const { success } = require('../utils/response');
+const healthController = require('../controllers/health.controller');
 
 const router = Router();
 
@@ -11,5 +12,7 @@ router.get('/', (req, res) =>
     timestamp: new Date().toISOString(),
   })
 );
+
+router.get('/db', healthController.checkDatabase);
 
 module.exports = router;
