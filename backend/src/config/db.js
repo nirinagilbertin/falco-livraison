@@ -22,6 +22,11 @@ const query = async (sql, params = {}) => {
   return rows;
 };
 
+// Renvoie une fonction (sql, params) qui s'exécute dans la transaction `conn` si elle est fournie,
+// sinon via le pool. Permet à un repository de servir avec ou sans transaction.
+const executor = (conn) =>
+  conn ? async (sql, params = {}) => (await conn.execute(sql, params))[0] : query;
+
 // Exécute plusieurs requêtes dans une transaction : commit si tout réussit, rollback sinon
 // Usage : await withTransaction(async (conn) => { await conn.execute(...); });
 const withTransaction = async (callback) => {
@@ -44,4 +49,4 @@ const testConnection = async () => {
   await pool.query('SELECT 1');
 };
 
-module.exports = { pool, query, withTransaction, testConnection };
+module.exports = { pool, query, executor, withTransaction, testConnection };

@@ -24,8 +24,12 @@ const env = {
 env.isProduction = env.nodeEnv === 'production';
 
 // En production, le secret JWT est obligatoire
-if (env.isProduction && !env.jwt.secret) {
-  throw new Error('JWT_SECRET est obligatoire en production');
+// Le secret JWT est obligatoire (en production, il doit aussi être long)
+if (!env.jwt.secret) {
+  throw new Error('JWT_SECRET est obligatoire : renseigne-le dans le fichier .env');
+}
+if (env.isProduction && env.jwt.secret.length < 32) {
+  throw new Error('JWT_SECRET doit contenir au moins 32 caractères en production');
 }
 
 module.exports = env;
