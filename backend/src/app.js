@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 
+require('./config/zod');
 const env = require('./config/env');
 const routes = require('./routes');
 const notFound = require('./middlewares/notFound');
