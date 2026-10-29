@@ -60,6 +60,15 @@ const countActiveByDepot = async (id_depot) => {
   return total;
 };
 
+// Zones actives dotées de limites géographiques : sert à localiser une adresse
+const findActiveWithBoundaries = async () => {
+  const rows = await executor()(
+    `SELECT id_zone, nom_zone, ville, limites_geographiques FROM zone
+     WHERE statut = 'active' AND limites_geographiques IS NOT NULL ORDER BY id_zone`
+  );
+  return rows.map(normalize);
+};
+
 const toJson = (v) => (v ? JSON.stringify(v) : null);
 
 const create = async (conn, { id_depot, nom_zone, ville, description, limites_geographiques }) => {
@@ -81,4 +90,4 @@ const update = async (conn, id_zone, data) => {
 
 const remove = (conn, id_zone) => executor(conn)('DELETE FROM zone WHERE id_zone = :id_zone', { id_zone });
 
-module.exports = { list, findById, findByNameAndCity, countActiveByDepot, create, update, remove };
+module.exports = { list, findById, findByNameAndCity, findActiveWithBoundaries, countActiveByDepot, create, update, remove };

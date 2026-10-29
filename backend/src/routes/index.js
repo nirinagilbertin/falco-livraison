@@ -13,5 +13,6 @@ router.use('/livreurs', require('./livreur.routes'));
 router.use('/profil', require('./profil.routes'));
 router.use('/tarifs', require('./tarif.routes'));
 router.use('/parametres', require('./parametre.routes'));
+router.use('/demandes', require('./demande.routes'));
 
 module.exports = router;
