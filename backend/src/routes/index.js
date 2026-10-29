@@ -11,5 +11,7 @@ router.use('/vehicules', require('./vehicule.routes'));
 router.use('/utilisateurs', require('./utilisateur.routes'));
 router.use('/livreurs', require('./livreur.routes'));
 router.use('/profil', require('./profil.routes'));
+router.use('/tarifs', require('./tarif.routes'));
+router.use('/parametres', require('./parametre.routes'));
 
 module.exports = router;
