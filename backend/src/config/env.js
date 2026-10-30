@@ -12,7 +12,7 @@ const env = {
   },
   jwt: {
     secret: process.env.JWT_SECRET,
-    expiresIn: process.env.JWT_EXPIRES_IN || '30m',
+    expiresIn: process.env.JWT_EXPIRES_IN || '72h',
   },
   bcryptRounds: Number(process.env.BCRYPT_ROUNDS) || 10,
   corsOrigins: (process.env.CORS_ORIGINS || '')
