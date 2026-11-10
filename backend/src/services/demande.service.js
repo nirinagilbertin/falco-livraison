@@ -13,6 +13,7 @@ const profilRepository = require('../repositories/profil.repository');
 const zoningService = require('./zoning.service');
 const tarifService = require('./tarif.service');
 const auditService = require('./audit.service');
+const affectationService = require('./affectation.service');
 
 const SUBJECT = 'demande';
 const round2 = (n) => Math.round(n * 100) / 100;
@@ -130,7 +131,14 @@ const create = async (user, data) => {
     return id_demande;
   });
 
-  // Étape 8 : c'est ici que la recherche d'un livreur sera lancée (CU-11), après la validation de la transaction.
+    // CU-11 : recherche automatique d'un livreur. Une erreur ici ne doit pas faire échouer la création.
+  try {
+    const livraison = await livraisonRepository.findByDemande(id);
+    await affectationService.autoAssign(livraison.id_livraison);
+  } catch (err) {
+    console.error(`Affectation automatique impossible pour la demande ${id} :`, err.message);
+  }
+  
   return buildDetail(id);
 };
 

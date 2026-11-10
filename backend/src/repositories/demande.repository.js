@@ -75,4 +75,8 @@ const markCancelled = (conn, id_demande, motif) =>
 const cancelPendingPayments = (conn, id_demande) =>
   executor(conn)("UPDATE paiement SET statut = 'annule' WHERE id_demande = :id_demande AND statut = 'en_cours'", { id_demande });
 
-module.exports = { list, findById, findByIdForUpdate, create, setNumeroSuivi, markCancelled, cancelPendingPayments };
+// Passage de la demande à un nouveau statut (ex. « en_cours » après acceptation de la mission)
+const updateStatut = (conn, id_demande, statut) =>
+  executor(conn)('UPDATE demande SET statut = :statut WHERE id_demande = :id_demande', { id_demande, statut });
+
+module.exports = { list, findById, findByIdForUpdate, create, setNumeroSuivi, markCancelled, cancelPendingPayments, updateStatut };

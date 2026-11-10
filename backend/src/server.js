@@ -1,6 +1,7 @@
 const app = require('./app');
 const env = require('./config/env');
 const { testConnection, pool } = require('./config/db');
+const { startJobs } = require('./jobs');
 
 const start = async () => {
   try {
@@ -11,9 +12,11 @@ const start = async () => {
     console.error('Vérifie que MySQL est démarré dans XAMPP et que le schéma est importé.');
     process.exit(1);
   }
-  return app.listen(env.port, () => {
+  const server = app.listen(env.port, () => {
     console.log(`Falco Livraison API démarrée sur http://localhost:${env.port}/api (${env.nodeEnv})`);
   });
+  if (env.nodeEnv !== 'test') startJobs();
+  return server;
 };
 
 let server;

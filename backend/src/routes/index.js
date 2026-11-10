@@ -14,5 +14,7 @@ router.use('/profil', require('./profil.routes'));
 router.use('/tarifs', require('./tarif.routes'));
 router.use('/parametres', require('./parametre.routes'));
 router.use('/demandes', require('./demande.routes'));
+router.use('/affectations', require('./affectation.routes'));
+router.use('/livraisons', require('./livraison.routes'));
 
 module.exports = router;
