@@ -113,6 +113,10 @@ const createProposal = (ctx, livreur, { proposant = null, user = null, manual = 
     if (!livraison || livraison.statut !== 'en_attente') {
       throw new AppError("La livraison n'est plus en attente", 409, 'LIVRAISON_NON_EN_ATTENTE');
     }
+    // Une livraison dont le colis est au dépôt se réaffecte par la route « affecter-depot » (zones du dépôt, pas de la zone de récupération)
+    if (ctx.id_depot_colis && type_recuperation !== 'depot') {
+      throw new AppError('Cette livraison est reprise au dépôt : utilisez la réaffectation « dépôt »', 409, 'LIVRAISON_AU_DEPOT');
+    }
 
     // Verrous du livreur puis de son véhicule AVANT toute lecture simple : sous REPEATABLE READ, la première
     // lecture simple fige l'instantané. Prise après les verrous, elle voit les propositions validées entre-temps

@@ -1,6 +1,7 @@
 const cron = require('node-cron');
 const affectationService = require('../services/affectation.service');
 const paiementService = require('../services/paiement.service');
+const redistributionService = require('../services/redistribution.service');
 
 // Exécute une tâche sans chevauchement : si l'exécution précédente n'est pas finie, on saute le tour
 const guarded = (name, fn) => {
@@ -36,6 +37,18 @@ const startJobs = () => {
       if (cancelled > 0) console.log(`[tâche] ${cancelled} demande(s) annulée(s) pour non-paiement`);
     })
   );
+
+    // Toutes les 5 minutes : remise en attente des livraisons inachevées (jour commun) et propositions par vagues
+  cron.schedule(
+    '*/5 * * * *',
+    guarded('redistribution', async () => {
+      const { reactivated, proposed } = await redistributionService.run();
+      if (reactivated > 0 || proposed > 0) {
+        console.log(`[tâche] redistribution : ${reactivated} livraison(s) remise(s) en attente, ${proposed} proposition(s) envoyée(s)`);
+      }
+    })
+  );
+  
   console.log('Tâches planifiées démarrées');
 };
 

@@ -25,7 +25,9 @@ const findByIdForUpdate = async (conn, id_livraison) => {
 const findContext = async (id_livraison, conn) => {
   const rows = await executor(conn)(
     `SELECT li.id_livraison, li.statut, li.date_affectation, li.date_debut, li.date_fin, li.motif_inachevement,
-            li.date_reprogrammation, d.id_demande, d.numero_suivi, d.statut AS statut_demande,
+            li.date_reprogrammation,
+            (SELECT c.id_depot FROM colis c WHERE c.id_demande = d.id_demande AND c.statut = 'depose' LIMIT 1) AS id_depot_colis,
+            d.id_demande, d.numero_suivi, d.statut AS statut_demande,
             d.id_zone_recuperation, d.adresse_recuperation, d.latitude_recuperation, d.longitude_recuperation,
             d.adresse_livraison, d.latitude_livraison, d.longitude_livraison, d.distance_estimee,
             e.id_compte AS expediteur_id_compte, e.nom_complet AS expediteur_nom, e.telephone AS expediteur_telephone,
