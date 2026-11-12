@@ -14,6 +14,7 @@ const zoningService = require('./zoning.service');
 const tarifService = require('./tarif.service');
 const auditService = require('./audit.service');
 const affectationService = require('./affectation.service');
+const routingService = require('./routing.service');
 
 const SUBJECT = 'demande';
 const round2 = (n) => Math.round(n * 100) / 100;
@@ -87,8 +88,9 @@ const create = async (user, data) => {
   if (!zoneLivraison) throw fieldError('adresse_livraison', "L'adresse de livraison est hors des zones desservies");
 
   // Distance à vol d'oiseau pour l'instant ; le calcul d'itinéraire viendra avec la géolocalisation
-  const distance = round2(
-    haversineKm(data.latitude_recuperation, data.longitude_recuperation, data.latitude_livraison, data.longitude_livraison)
+  const distance = await routingService.getDistanceKm(
+    { latitude: data.latitude_recuperation, longitude: data.longitude_recuperation },
+    { latitude: data.latitude_livraison, longitude: data.longitude_livraison }
   );
   const poidsTotal = round2(data.colis.reduce((sum, c) => sum + c.poids_estime, 0));
   const tarif = await tarifService.getActiveOrFail();

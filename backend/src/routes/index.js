@@ -18,5 +18,7 @@ router.use('/affectations', require('./affectation.routes'));
 router.use('/livraisons', require('./livraison.routes'));
 router.use('/demandes', require('./paiement.routes'));
 router.use('/livraisons', require('./execution.routes'));
+router.use('/livraisons', require('./suivi.routes'));
+router.use('/positions', require('./position.routes'));
 
 module.exports = router;
