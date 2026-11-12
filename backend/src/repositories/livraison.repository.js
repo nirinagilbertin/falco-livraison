@@ -24,7 +24,8 @@ const findByIdForUpdate = async (conn, id_livraison) => {
 // Livraison avec sa demande, son expéditeur et le poids total estimé (contexte d'une affectation)
 const findContext = async (id_livraison, conn) => {
   const rows = await executor(conn)(
-    `SELECT li.id_livraison, li.statut, d.id_demande, d.numero_suivi, d.statut AS statut_demande,
+    `SELECT li.id_livraison, li.statut, li.date_affectation, li.date_debut, li.date_fin, li.motif_inachevement,
+            li.date_reprogrammation, d.id_demande, d.numero_suivi, d.statut AS statut_demande,
             d.id_zone_recuperation, d.adresse_recuperation, d.latitude_recuperation, d.longitude_recuperation,
             d.adresse_livraison, d.latitude_livraison, d.longitude_livraison, d.distance_estimee,
             e.id_compte AS expediteur_id_compte, e.nom_complet AS expediteur_nom, e.telephone AS expediteur_telephone,
@@ -78,7 +79,8 @@ const list = async ({ statut, q, sans_livreur }, pagination) => {
   const run = executor();
 
   const items = await run(
-    `SELECT li.id_livraison, li.statut, li.date_creation, d.id_demande, d.numero_suivi, d.statut AS statut_demande,
+    `SELECT li.id_livraison, li.statut, li.date_creation, li.motif_inachevement, li.date_reprogrammation,
+            d.id_demande, d.numero_suivi, d.statut AS statut_demande,
             d.adresse_recuperation, d.adresse_livraison, d.distance_estimee, e.nom_complet AS expediteur_nom,
             (SELECT CONCAT(lv.prenom, ' ', lv.nom) FROM affectation a JOIN livreur lv ON lv.id_livreur = a.id_livreur
               WHERE a.id_livraison = li.id_livraison AND a.statut = 'acceptee' LIMIT 1) AS livreur_nom,

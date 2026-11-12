@@ -30,6 +30,11 @@ const getById = async (id) => {
   return {
     id_livraison: ctx.id_livraison,
     statut: ctx.statut,
+    date_affectation: ctx.date_affectation,
+    date_debut: ctx.date_debut,
+    date_fin: ctx.date_fin,
+    motif_inachevement: ctx.motif_inachevement,
+    date_reprogrammation: ctx.date_reprogrammation,
     demande: {
       id_demande: ctx.id_demande,
       numero_suivi: ctx.numero_suivi,
