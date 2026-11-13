@@ -1,6 +1,7 @@
 const { Router } = require('express');
 
 const router = Router();
+const administration = require('./administration.routes');
 
 router.use('/health', require('./health.routes'));
 // Les routes métier seront ajoutées étape par étape :
@@ -24,5 +25,8 @@ router.use('/livraisons', require('./redistribution.routes'));
 router.use('/incidents', require('./incident.routes'));
 router.use('/alertes', require('./alerteSuivi.routes'));
 router.use('/notifications', require('./notificationBox.routes'));
+router.use('/statistiques', require('./statistique.routes'));
+router.use('/paiements', administration.paiements);
+router.use('/audit', administration.audit);
 
 module.exports = router;
