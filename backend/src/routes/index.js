@@ -21,5 +21,8 @@ router.use('/livraisons', require('./execution.routes'));
 router.use('/livraisons', require('./suivi.routes'));
 router.use('/positions', require('./position.routes'));
 router.use('/livraisons', require('./redistribution.routes'));
+router.use('/incidents', require('./incident.routes'));
+router.use('/alertes', require('./alerteSuivi.routes'));
+router.use('/notifications', require('./notificationBox.routes'));
 
 module.exports = router;
