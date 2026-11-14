@@ -2,6 +2,7 @@ const cron = require('node-cron');
 const affectationService = require('../services/affectation.service');
 const paiementService = require('../services/paiement.service');
 const redistributionService = require('../services/redistribution.service');
+const maintenanceService = require('../services/maintenance.service');
 
 // Exécute une tâche sans chevauchement : si l'exécution précédente n'est pas finie, on saute le tour
 const guarded = (name, fn) => {
@@ -45,6 +46,17 @@ const startJobs = () => {
       const { reactivated, proposed } = await redistributionService.run();
       if (reactivated > 0 || proposed > 0) {
         console.log(`[tâche] redistribution : ${reactivated} livraison(s) remise(s) en attente, ${proposed} proposition(s) envoyée(s)`);
+      }
+    })
+  );
+
+    // Chaque nuit à 3 h : purge des anciennes positions GPS et des anciennes notifications lues
+  cron.schedule(
+    '0 3 * * *',
+    guarded('purge', async () => {
+      const { positions, notifications } = await maintenanceService.purge();
+      if (positions > 0 || notifications > 0) {
+        console.log(`[tâche] purge : ${positions} position(s) GPS, ${notifications} notification(s) lue(s) supprimée(s)`);
       }
     })
   );
