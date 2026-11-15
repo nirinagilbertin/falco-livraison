@@ -7,7 +7,8 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "seed:admin": "node scripts/create-admin.js",
-    "purge": "node scripts/purge.js"
+    "purge": "node scripts/purge.js",
+    "smoke": "node scripts/smoke-test.js"
   },
   "license": "UNLICENSED",
   "private": true,
