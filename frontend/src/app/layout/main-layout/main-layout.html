@@ -1,0 +1,14 @@
+<div class="min-h-screen bg-gray-50">
+  <app-sidebar [ouvert]="menuOuvert()" (fermer)="menuOuvert.set(false)" />
+
+  @if (menuOuvert()) {
+    <div class="fixed inset-0 z-30 bg-black/30 lg:hidden" (click)="menuOuvert.set(false)"></div>
+  }
+
+  <div class="lg:pl-64 flex flex-col min-h-screen">
+    <app-topbar (ouvrirMenu)="menuOuvert.set(true)" />
+    <main class="flex-1 p-4 md:p-6">
+      <router-outlet />
+    </main>
+  </div>
+</div>

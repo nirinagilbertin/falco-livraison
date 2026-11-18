@@ -5,12 +5,14 @@ import { AppError } from '../models/api.model';
 import { Compte, LoginResponse, MeResponse, RegisterPayload, Role } from '../models/auth.model';
 import { ApiService } from './api.service';
 import { TokenService } from './token.service';
+import { NotificationService } from './notification.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private api = inject(ApiService);
   private tokens = inject(TokenService);
   private router = inject(Router);
+  private notifications = inject(NotificationService);
 
   readonly compte = signal<Compte | null>(null);
   readonly profil = signal<Record<string, unknown> | null>(null);
@@ -70,6 +72,7 @@ export class AuthService {
     this.tokens.clear();
     this.compte.set(null);
     this.profil.set(null);
+    this.notifications.reset();
   }
 
   logout(): void {

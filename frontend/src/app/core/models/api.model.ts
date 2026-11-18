@@ -9,6 +9,7 @@ export interface PageMeta {
   limit: number;
   total: number;
   totalPages: number;
+  non_lues?: number;
 }
 
 export interface ApiListResponse<T> extends ApiResponse<T[]> {

@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 import { authGuard, guestGuard, sessionGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
-    {
+  {
     path: 'login',
     canActivate: [guestGuard],
     loadComponent: () => import('./features/auth/login/login').then((m) => m.Login),
@@ -21,7 +21,11 @@ export const routes: Routes = [
   {
     path: '',
     canActivate: [authGuard],
-    loadComponent: () => import('./features/accueil/accueil').then((m) => m.Accueil),
+    loadComponent: () => import('./layout/main-layout/main-layout').then((m) => m.MainLayout),
+    children: [
+      { path: '', pathMatch: 'full', loadComponent: () => import('./features/accueil/accueil').then((m) => m.Accueil) },
+      { path: 'profil', loadComponent: () => import('./features/profil/profil').then((m) => m.Profil) },
+    ],
   },
   { path: '**', redirectTo: '' },
 ];
