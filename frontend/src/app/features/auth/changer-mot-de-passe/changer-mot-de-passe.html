@@ -1,0 +1,33 @@
+<app-auth-card
+  titre="Changer le mot de passe"
+  [sousTitre]="auth.compte()?.mot_de_passe_temporaire ? 'Votre mot de passe est temporaire : choisissez-en un nouveau pour continuer.' : ''"
+>
+  <form [formGroup]="form" (ngSubmit)="submit()" class="flex flex-col gap-4">
+    @if (erreur()) {
+      <div class="rounded-xl bg-red-50 text-red-700 text-sm p-3">{{ erreur() }}</div>
+    }
+
+    <div class="flex flex-col gap-1">
+      <label for="ancien" class="text-sm font-medium text-gray-700">Ancien mot de passe</label>
+      <p-password inputId="ancien" formControlName="ancien_mot_de_passe" [feedback]="false" [toggleMask]="true" fluid />
+      @if (err('ancien_mot_de_passe'); as m) { <small class="text-red-600">{{ m }}</small> }
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label for="nouveau" class="text-sm font-medium text-gray-700">Nouveau mot de passe</label>
+      <p-password inputId="nouveau" formControlName="nouveau_mot_de_passe" [feedback]="false" [toggleMask]="true" fluid />
+      @if (err('nouveau_mot_de_passe'); as m) { <small class="text-red-600">{{ m }}</small> }
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label for="conf" class="text-sm font-medium text-gray-700">Confirmation</label>
+      <p-password inputId="conf" formControlName="confirmation" [feedback]="false" [toggleMask]="true" fluid />
+      @if (form.hasError('mismatch') && form.controls.confirmation.touched) {
+        <small class="text-red-600">Les mots de passe ne correspondent pas</small>
+      }
+    </div>
+
+    <p-button type="submit" label="Enregistrer" [loading]="loading()" styleClass="w-full" />
+    <p-button type="button" label="Se déconnecter" severity="secondary" [text]="true" styleClass="w-full" (onClick)="auth.logout()" />
+  </form>
+</app-auth-card>

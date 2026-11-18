@@ -1,0 +1,26 @@
+<app-auth-card titre="Connexion" sousTitre="Accédez à votre espace de gestion.">
+  <form [formGroup]="form" (ngSubmit)="submit()" class="flex flex-col gap-4">
+    @if (erreur()) {
+      <div class="rounded-xl bg-red-50 text-red-700 text-sm p-3">{{ erreur() }}</div>
+    }
+
+    <div class="flex flex-col gap-1">
+      <label for="email" class="text-sm font-medium text-gray-700">Adresse e-mail</label>
+      <input id="email" type="email" pInputText formControlName="email" autocomplete="username" class="w-full" />
+      @if (err('email'); as m) { <small class="text-red-600">{{ m }}</small> }
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label for="mdp" class="text-sm font-medium text-gray-700">Mot de passe</label>
+      <p-password inputId="mdp" formControlName="mot_de_passe" [feedback]="false" [toggleMask]="true" fluid autocomplete="current-password" />
+      @if (err('mot_de_passe'); as m) { <small class="text-red-600">{{ m }}</small> }
+    </div>
+
+    <p-button type="submit" label="Se connecter" [loading]="loading()" styleClass="w-full" />
+
+    <p class="text-sm text-center text-gray-500">
+      Partenaire commercial ?
+      <a routerLink="/inscription" class="text-blue-600 hover:underline">Créer un compte</a>
+    </p>
+  </form>
+</app-auth-card>
