@@ -1,0 +1,114 @@
+<div class="flex flex-col gap-6">
+  <div class="flex items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-semibold tracking-tight">Véhicules</h1>
+      <p class="text-sm text-gray-500">Un véhicule peut être utilisé par plusieurs livreurs, mais pas en même temps.</p>
+    </div>
+    <p-button label="Nouveau véhicule" icon="pi pi-plus" (onClick)="ouvrirCreation()" />
+  </div>
+
+  <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden">
+    <p-table
+      [value]="items()"
+      [lazy]="true"
+      (onLazyLoad)="charger($event)"
+      [paginator]="true"
+      [rows]="20"
+      [rowsPerPageOptions]="[10, 20, 50]"
+      [totalRecords]="total()"
+      [loading]="loading()"
+      [scrollable]="true"
+    >
+      <ng-template #header>
+        <tr>
+          <th>Immatriculation</th>
+          <th>Véhicule</th>
+          <th>Type</th>
+          <th>Carburant</th>
+          <th>Capacité</th>
+          <th>Zone</th>
+          <th>Statut</th>
+          <th class="w-28"></th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-v>
+        <tr>
+          <td class="font-medium">{{ v.immatriculation }}</td>
+          <td>{{ v.marque }} {{ v.modele }}</td>
+          <td>{{ v.type_vehicule }}</td>
+          <td>{{ v.carburant }}</td>
+          <td>{{ v.capacite_poids }} kg</td>
+          <td>{{ nomZone(v.id_zone) }}</td>
+          <td><p-tag [value]="labelStatut(v.statut)" [severity]="severite(v.statut)" /></td>
+          <td>
+            <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" severity="secondary" (onClick)="ouvrirEdition(v)" />
+            <p-button icon="pi pi-trash" [text]="true" [rounded]="true" severity="danger" (onClick)="supprimer(v)" />
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr><td colspan="8" class="text-center py-8 text-gray-400">Aucun véhicule</td></tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>
+
+<p-dialog [(visible)]="dialogOuvert" [modal]="true" [draggable]="false" [header]="enEdition() ? 'Modifier le véhicule' : 'Nouveau véhicule'" [style]="{ width: '36rem' }">
+  <form [formGroup]="form" (ngSubmit)="enregistrer()" class="flex flex-col gap-4">
+    <div class="flex flex-col gap-1">
+      <label for="immat" class="text-sm font-medium text-gray-700">Immatriculation</label>
+      <input id="immat" pInputText formControlName="immatriculation" class="w-full" />
+      @if (err('immatriculation'); as m) { <small class="text-red-600">{{ m }}</small> }
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="flex flex-col gap-1">
+        <label for="marque" class="text-sm font-medium text-gray-700">Marque</label>
+        <input id="marque" pInputText formControlName="marque" class="w-full" />
+        @if (err('marque'); as m) { <small class="text-red-600">{{ m }}</small> }
+      </div>
+      <div class="flex flex-col gap-1">
+        <label for="modele" class="text-sm font-medium text-gray-700">Modèle</label>
+        <input id="modele" pInputText formControlName="modele" class="w-full" />
+        @if (err('modele'); as m) { <small class="text-red-600">{{ m }}</small> }
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium text-gray-700">Type</label>
+        <p-select [options]="types" optionLabel="label" optionValue="value" formControlName="type_vehicule" fluid />
+        @if (err('type_vehicule'); as m) { <small class="text-red-600">{{ m }}</small> }
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium text-gray-700">Carburant</label>
+        <p-select [options]="carburants" optionLabel="label" optionValue="value" formControlName="carburant" fluid />
+        @if (err('carburant'); as m) { <small class="text-red-600">{{ m }}</small> }
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium text-gray-700">Capacité (kg)</label>
+        <p-inputnumber formControlName="capacite_poids" [min]="0" [maxFractionDigits]="2" fluid />
+        @if (err('capacite_poids'); as m) { <small class="text-red-600">{{ m }}</small> }
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium text-gray-700">Zone de rattachement</label>
+        <p-select [options]="zones()" optionLabel="nom_zone" optionValue="id_zone" placeholder="Choisir une zone" formControlName="id_zone" fluid />
+        @if (err('id_zone'); as m) { <small class="text-red-600">{{ m }}</small> }
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label class="text-sm font-medium text-gray-700">Statut</label>
+      <p-select [options]="statuts" optionLabel="label" optionValue="value" optionDisabled="disabled" formControlName="statut" fluid />
+      <small class="text-gray-400">« En service » est géré automatiquement lors des missions.</small>
+    </div>
+
+    <div class="flex justify-end gap-2 pt-2">
+      <p-button type="button" label="Annuler" severity="secondary" [text]="true" (onClick)="dialogOuvert.set(false)" />
+      <p-button type="submit" label="Enregistrer" [loading]="saving()" />
+    </div>
+  </form>
+</p-dialog>

@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard, sessionGuard } from './core/guards/auth.guard';
+import { authGuard, guestGuard, sessionGuard, roleGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -25,6 +25,21 @@ export const routes: Routes = [
     children: [
       { path: '', pathMatch: 'full', loadComponent: () => import('./features/accueil/accueil').then((m) => m.Accueil) },
       { path: 'profil', loadComponent: () => import('./features/profil/profil').then((m) => m.Profil) },
+      {
+        path: 'depots',
+        canActivate: [roleGuard('administrateur', 'gestionnaire')],
+        loadComponent: () => import('./features/ressources/depots/depots').then((m) => m.Depots),
+      },
+      {
+        path: 'zones',
+        canActivate: [roleGuard('administrateur', 'gestionnaire')],
+        loadComponent: () => import('./features/ressources/zones/zones').then((m) => m.Zones),
+      },
+      {
+        path: 'vehicules',
+        canActivate: [roleGuard('administrateur', 'gestionnaire')],
+        loadComponent: () => import('./features/ressources/vehicules/vehicules').then((m) => m.Vehicules),
+      },
     ],
   },
   { path: '**', redirectTo: '' },
