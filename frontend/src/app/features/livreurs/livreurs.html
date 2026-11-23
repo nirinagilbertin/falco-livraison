@@ -1,0 +1,139 @@
+<div class="flex flex-col gap-6">
+  <div class="flex items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-semibold tracking-tight">Livreurs</h1>
+      <p class="text-sm text-gray-500">Un livreur sans véhicule assigné ne peut pas recevoir de mission.</p>
+    </div>
+    <p-button label="Nouveau livreur" icon="pi pi-plus" (onClick)="ouvrirCreation()" />
+  </div>
+
+  <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden">
+    <p-table
+      [value]="items()"
+      [lazy]="true"
+      (onLazyLoad)="charger($event)"
+      [paginator]="true"
+      [rows]="20"
+      [rowsPerPageOptions]="[10, 20, 50]"
+      [totalRecords]="total()"
+      [loading]="loading()"
+      [scrollable]="true"
+    >
+      <ng-template #header>
+        <tr>
+          <th>Livreur</th>
+          <th>Téléphone</th>
+          <th>CIN</th>
+          <th>Permis</th>
+          <th>Véhicule</th>
+          <th>Zones</th>
+          <th>Disponibilité</th>
+          <th>Compte</th>
+          <th class="w-28"></th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-l>
+        <tr>
+          <td>
+            <div class="font-medium">{{ l.prenom }} {{ l.nom }}</div>
+            <div class="text-xs text-gray-400">{{ l.email }}</div>
+          </td>
+          <td>{{ l.telephone }}</td>
+          <td>{{ l.cin }}</td>
+          <td>
+            <div class="flex gap-1">
+              @for (p of l.permis; track p) {
+                <p-tag [value]="p" severity="secondary" />
+              }
+            </div>
+          </td>
+          <td>{{ l.immatriculation ?? '—' }}</td>
+          <td>{{ l.nb_zones }}</td>
+          <td><p-tag [value]="labelStatut(l.disponibilite)" [severity]="severite(l.disponibilite)" /></td>
+          <td><p-tag [value]="labelStatut(l.statut_compte)" [severity]="severite(l.statut_compte)" /></td>
+          <td class="whitespace-nowrap">
+            <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" severity="secondary" (onClick)="ouvrirEdition(l)" />
+            <p-button icon="pi pi-trash" [text]="true" [rounded]="true" severity="danger" (onClick)="supprimer(l)" />
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr><td colspan="9" class="text-center py-8 text-gray-400">Aucun livreur</td></tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>
+
+<p-dialog [(visible)]="dialogOuvert" [modal]="true" [draggable]="false" [header]="enEdition() ? 'Modifier le livreur' : 'Nouveau livreur'" [style]="{ width: '38rem' }">
+  <form [formGroup]="form" (ngSubmit)="enregistrer()" class="flex flex-col gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="flex flex-col gap-1">
+        <label for="nom" class="text-sm font-medium text-gray-700">Nom</label>
+        <input id="nom" pInputText formControlName="nom" class="w-full" />
+        @if (err('nom'); as m) { <small class="text-red-600">{{ m }}</small> }
+      </div>
+      <div class="flex flex-col gap-1">
+        <label for="prenom" class="text-sm font-medium text-gray-700">Prénom</label>
+        <input id="prenom" pInputText formControlName="prenom" class="w-full" />
+        @if (err('prenom'); as m) { <small class="text-red-600">{{ m }}</small> }
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="flex flex-col gap-1">
+        <label for="tel" class="text-sm font-medium text-gray-700">Téléphone</label>
+        <input id="tel" pInputText formControlName="telephone" class="w-full" />
+        @if (err('telephone'); as m) { <small class="text-red-600">{{ m }}</small> }
+      </div>
+      <div class="flex flex-col gap-1">
+        <label for="cin" class="text-sm font-medium text-gray-700">CIN</label>
+        <input id="cin" pInputText formControlName="cin" class="w-full" />
+        @if (err('cin'); as m) { <small class="text-red-600">{{ m }}</small> }
+      </div>
+    </div>
+
+    @if (!enEdition()) {
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="flex flex-col gap-1">
+          <label for="email" class="text-sm font-medium text-gray-700">Adresse e-mail</label>
+          <input id="email" type="email" pInputText formControlName="email" class="w-full" />
+          @if (err('email'); as m) { <small class="text-red-600">{{ m }}</small> }
+        </div>
+        <div class="flex flex-col gap-1">
+          <label for="user" class="text-sm font-medium text-gray-700">Nom d'utilisateur</label>
+          <input id="user" pInputText formControlName="nom_utilisateur" class="w-full" />
+          @if (err('nom_utilisateur'); as m) { <small class="text-red-600">{{ m }}</small> }
+        </div>
+      </div>
+    }
+
+    <div class="flex flex-col gap-1">
+      <label class="text-sm font-medium text-gray-700">Catégories de permis</label>
+      <p-multiselect [options]="categories" formControlName="permis" display="chip" placeholder="Choisir" fluid />
+      @if (err('permis'); as m) { <small class="text-red-600">{{ m }}</small> }
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label class="text-sm font-medium text-gray-700">Zones d'intervention</label>
+      <p-multiselect [options]="zones()" optionLabel="nom_zone" optionValue="id_zone" formControlName="zones" display="chip" placeholder="Choisir" fluid />
+      @if (err('zones'); as m) { <small class="text-red-600">{{ m }}</small> }
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label class="text-sm font-medium text-gray-700">Véhicule habituel</label>
+      <p-select [options]="vehicules()" optionLabel="immatriculation" optionValue="id_vehicule" placeholder="Aucun" [showClear]="true" formControlName="id_vehicule" fluid />
+      @if (err('id_vehicule'); as m) { <small class="text-red-600">{{ m }}</small> }
+    </div>
+
+    @if (!enEdition()) {
+      <small class="text-gray-400">Un mot de passe temporaire sera généré et affiché après la création.</small>
+    }
+
+    <div class="flex justify-end gap-2 pt-2">
+      <p-button type="button" label="Annuler" severity="secondary" [text]="true" (onClick)="dialogOuvert.set(false)" />
+      <p-button type="submit" label="Enregistrer" [loading]="saving()" />
+    </div>
+  </form>
+</p-dialog>
+
+<app-mot-de-passe-initial [(visible)]="mdpOuvert" [email]="emailCree()" [motDePasse]="mdp()" />

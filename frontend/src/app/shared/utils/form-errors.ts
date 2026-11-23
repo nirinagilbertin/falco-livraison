@@ -18,14 +18,19 @@ function normalize(details: unknown): Record<string, string> {
 }
 
 /** Place les messages du backend sous les champs du formulaire. Gère les chemins imbriqués (ex. colis.0.poids_estime). */
-export function applyServerErrors(form: FormGroup, error: AppError): void {
+/** Place les messages du backend sous les champs du formulaire. Renvoie les erreurs sans champ correspondant. */
+export function applyServerErrors(form: FormGroup, error: AppError): string[] {
+  const nonAffectees: string[] = [];
   for (const [name, message] of Object.entries(normalize(error.details))) {
     const ctrl = form.get(name);
     if (ctrl) {
       ctrl.setErrors({ server: message });
       ctrl.markAsTouched();
+    } else {
+      nonAffectees.push(`${name} : ${message}`);
     }
   }
+  return nonAffectees;
 }
 
 /** Message à afficher sous un champ, ou null. */

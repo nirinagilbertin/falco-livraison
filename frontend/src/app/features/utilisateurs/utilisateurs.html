@@ -1,0 +1,138 @@
+<div class="flex flex-col gap-6">
+  <div class="flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-semibold tracking-tight">Utilisateurs</h1>
+      <p class="text-sm text-gray-500">Comptes du personnel, des livreurs et des expéditeurs.</p>
+    </div>
+    <p-button label="Nouveau compte interne" icon="pi pi-plus" (onClick)="ouvrirCreation()" />
+  </div>
+
+  <p-select
+    [options]="rolesFiltre"
+    optionLabel="label"
+    optionValue="value"
+    placeholder="Tous les rôles"
+    [showClear]="true"
+    [formControl]="filtreRole"
+    class="w-full sm:w-64"
+  />
+
+  <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden">
+    <p-table
+      [value]="items()"
+      [lazy]="true"
+      (onLazyLoad)="charger($event)"
+      [paginator]="true"
+      [rows]="20"
+      [rowsPerPageOptions]="[10, 20, 50]"
+      [totalRecords]="total()"
+      [loading]="loading()"
+      [scrollable]="true"
+    >
+      <ng-template #header>
+        <tr>
+          <th>Nom</th>
+          <th>Identifiant</th>
+          <th>Rôle</th>
+          <th>Statut</th>
+          <th>Dernière connexion</th>
+          <th class="w-44"></th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-u>
+        <tr>
+          <td>
+            <div class="font-medium">{{ nomAffiche(u) }}</div>
+            <div class="text-xs text-gray-400">{{ u.email }}</div>
+          </td>
+          <td>{{ u.nom_utilisateur }}</td>
+          <td><p-tag [value]="libelleRole(u)" [severity]="severiteRole(u.role)" /></td>
+          <td>
+            <p-tag [value]="labelStatut(u.statut)" [severity]="severite(u.statut)" />
+            @if (u.mot_de_passe_temporaire) {
+              <div class="text-xs text-gray-400 mt-1">Mot de passe temporaire</div>
+            }
+          </td>
+          <td class="text-sm text-gray-500">{{ (u.derniere_connexion | date: 'dd/MM/yyyy HH:mm') ?? '—' }}</td>
+          <td class="whitespace-nowrap">
+            @if (u.id_compte !== monId) {
+              @if (u.role === 'gestionnaire' || u.role === 'superviseur') {
+                <p-button icon="pi pi-sync" [text]="true" [rounded]="true" severity="secondary" pTooltip="Changer le rôle" (onClick)="ouvrirRole(u)" />
+              }
+              @if (u.statut === 'actif') {
+                <p-button icon="pi pi-ban" [text]="true" [rounded]="true" severity="warn" pTooltip="Suspendre" (onClick)="suspendre(u)" />
+              } @else {
+                <p-button icon="pi pi-check-circle" [text]="true" [rounded]="true" severity="success" pTooltip="Réactiver" (onClick)="reactiver(u)" />
+              }
+              <p-button icon="pi pi-trash" [text]="true" [rounded]="true" severity="danger" pTooltip="Supprimer" (onClick)="supprimer(u)" />
+            }
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr><td colspan="6" class="text-center py-8 text-gray-400">Aucun utilisateur</td></tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>
+
+<p-dialog [(visible)]="dialogOuvert" [modal]="true" [draggable]="false" header="Nouveau compte interne" [style]="{ width: '34rem' }">
+  <form [formGroup]="form" (ngSubmit)="enregistrer()" class="flex flex-col gap-4">
+    <div class="flex flex-col gap-1">
+      <label class="text-sm font-medium text-gray-700">Rôle</label>
+      <p-select [options]="rolesCreation" optionLabel="label" optionValue="value" formControlName="role" fluid />
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="flex flex-col gap-1">
+        <label for="nom" class="text-sm font-medium text-gray-700">Nom</label>
+        <input id="nom" pInputText formControlName="nom" class="w-full" />
+        @if (err('nom'); as m) { <small class="text-red-600">{{ m }}</small> }
+      </div>
+      <div class="flex flex-col gap-1">
+        <label for="prenom" class="text-sm font-medium text-gray-700">Prénom</label>
+        <input id="prenom" pInputText formControlName="prenom" class="w-full" />
+        @if (err('prenom'); as m) { <small class="text-red-600">{{ m }}</small> }
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label for="tel" class="text-sm font-medium text-gray-700">Téléphone</label>
+      <input id="tel" pInputText formControlName="telephone" class="w-full" />
+      @if (err('telephone'); as m) { <small class="text-red-600">{{ m }}</small> }
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="flex flex-col gap-1">
+        <label for="email" class="text-sm font-medium text-gray-700">Adresse e-mail</label>
+        <input id="email" type="email" pInputText formControlName="email" class="w-full" />
+        @if (err('email'); as m) { <small class="text-red-600">{{ m }}</small> }
+      </div>
+      <div class="flex flex-col gap-1">
+        <label for="user" class="text-sm font-medium text-gray-700">Nom d'utilisateur</label>
+        <input id="user" pInputText formControlName="nom_utilisateur" class="w-full" />
+        @if (err('nom_utilisateur'); as m) { <small class="text-red-600">{{ m }}</small> }
+      </div>
+    </div>
+
+    <small class="text-gray-400">Un mot de passe temporaire sera généré et affiché après la création.</small>
+
+    <div class="flex justify-end gap-2 pt-2">
+      <p-button type="button" label="Annuler" severity="secondary" [text]="true" (onClick)="dialogOuvert.set(false)" />
+      <p-button type="submit" label="Créer le compte" [loading]="saving()" />
+    </div>
+  </form>
+</p-dialog>
+
+<p-dialog [(visible)]="roleDialogOuvert" [modal]="true" [draggable]="false" header="Changer le rôle" [style]="{ width: '24rem' }">
+  <div class="flex flex-col gap-4">
+    <p class="text-sm text-gray-600">Compte : <span class="font-medium">{{ cible() ? nomAffiche(cible()!) : '' }}</span></p>
+    <p-select [options]="rolesCreation" optionLabel="label" optionValue="value" [formControl]="nouveauRole" fluid />
+    <div class="flex justify-end gap-2">
+      <p-button type="button" label="Annuler" severity="secondary" [text]="true" (onClick)="roleDialogOuvert.set(false)" />
+      <p-button label="Enregistrer" [loading]="saving()" (onClick)="changerRole()" />
+    </div>
+  </div>
+</p-dialog>
+
+<app-mot-de-passe-initial [(visible)]="mdpOuvert" [email]="emailCree()" [motDePasse]="mdp()" />
