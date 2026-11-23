@@ -50,6 +50,11 @@ export const routes: Routes = [
         canActivate: [roleGuard('administrateur', 'gestionnaire')],
         loadComponent: () => import('./features/livreurs/livreurs').then((m) => m.Livreurs),
       },
+      {
+        path: 'configuration',
+        canActivate: [roleGuard('administrateur', 'gestionnaire')],
+        loadComponent: () => import('./features/configuration/configuration/configuration').then((m) => m.Configuration),
+      },
     ],
   },
   { path: '**', redirectTo: '' },

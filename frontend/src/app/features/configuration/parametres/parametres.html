@@ -1,0 +1,51 @@
+<section class="flex flex-col gap-4">
+  <h2 class="text-lg font-semibold tracking-tight">Paramètres</h2>
+
+  <div class="bg-white border border-gray-100 rounded-2xl px-6">
+    @for (p of items(); track p.cle) {
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-4 border-b border-gray-50 last:border-0">
+        <div class="sm:max-w-md">
+          <div class="text-sm font-medium">{{ libelle(p) }}</div>
+          @if (aide(p); as a) {
+            <div class="text-xs text-gray-400">{{ a }}</div>
+          }
+        </div>
+
+        <div class="flex items-center gap-2">
+          @switch (type(p)) {
+            @case ('jour') {
+              <p-select
+                [options]="jours"
+                optionLabel="label"
+                optionValue="value"
+                [ngModel]="saisies()[p.cle]"
+                (ngModelChange)="saisir(p.cle, $event)"
+                [disabled]="!editable(p)"
+                class="w-44"
+              />
+            }
+            @case ('nombre') {
+              <p-inputnumber
+                [ngModel]="saisies()[p.cle]"
+                (ngModelChange)="saisir(p.cle, $event)"
+                [min]="1"
+                [suffix]="suffixe(p)"
+                [disabled]="!editable(p)"
+                class="w-44"
+              />
+            }
+            @default {
+              <input pInputText [ngModel]="saisies()[p.cle]" (ngModelChange)="saisir(p.cle, $event)" [disabled]="!editable(p)" class="w-44" />
+            }
+          }
+
+          @if (editable(p)) {
+            <p-button label="Enregistrer" size="small" [disabled]="!modifie(p)" [loading]="enCours() === p.cle" (onClick)="enregistrer(p)" />
+          }
+        </div>
+      </div>
+    } @empty {
+      <p class="py-8 text-center text-sm text-gray-400">Aucun paramètre</p>
+    }
+  </div>
+</section>
