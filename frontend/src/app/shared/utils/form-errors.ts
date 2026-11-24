@@ -1,4 +1,4 @@
-import { AbstractControl, FormGroup } from '@angular/forms';
+import { AbstractControl, FormGroup, FormArray } from '@angular/forms';
 import { AppError } from '../../core/models/api.model';
 
 function normalize(details: unknown): Record<string, string> {
@@ -43,4 +43,17 @@ export function fieldError(ctrl: AbstractControl | null): string | null {
   if (e['minlength']) return `Minimum ${e['minlength'].requiredLength} caractères`;
   if (e['min']) return `Valeur minimale : ${e['min'].min}`;
   return 'Valeur invalide';
+}
+
+/** Messages de validation du serveur, pour un toast récapitulatif. */
+export function messagesServeur(error: AppError): string[] {
+  return Object.values(normalize(error.details));
+}
+
+/** Retire les erreurs posées par le serveur, pour permettre un nouvel envoi. */
+export function clearServerErrors(ctrl: AbstractControl): void {
+  if (ctrl instanceof FormGroup || ctrl instanceof FormArray) {
+    Object.values(ctrl.controls).forEach(clearServerErrors);
+  }
+  if (ctrl.errors?.['server']) ctrl.updateValueAndValidity({ emitEvent: false });
 }

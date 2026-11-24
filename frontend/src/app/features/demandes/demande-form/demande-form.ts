@@ -8,7 +8,7 @@ import { AppError } from '../../../core/models/api.model';
 import { DemandeService } from '../../../core/services/demande.service';
 import { NotifyService } from '../../../core/services/notify.service';
 import { AddressPicker } from '../../../shared/components/address-picker/address-picker';
-import { applyServerErrors, fieldError } from '../../../shared/utils/form-errors';
+import { applyServerErrors, clearServerErrors, fieldError, messagesServeur } from '../../../shared/utils/form-errors';
 import { compact } from '../../../shared/utils/payload';
 
 @Component({
@@ -80,6 +80,7 @@ export class DemandeForm {
   errDest = (i: number, nom: string) => fieldError(this.destinataires.at(i).get(nom));
 
   envoyer() {
+    clearServerErrors(this.form);
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       this.notify.warn('Complétez les champs obligatoires avant d\'envoyer la demande.');
@@ -102,8 +103,8 @@ export class DemandeForm {
       error: (e: AppError) => {
         this.saving.set(false);
         if (e.code === 'VALIDATION_ERROR') {
-          const reste = applyServerErrors(this.form, e);
-          if (reste.length) this.notify.error(reste.join(' · '));
+          applyServerErrors(this.form, e);
+          this.notify.error(messagesServeur(e).join(' · ') || e.message);
         } else if (e.status === 409) this.notify.error(e.message);
       },
     });
