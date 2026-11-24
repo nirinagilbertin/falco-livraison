@@ -1,0 +1,151 @@
+<div class="max-w-5xl flex flex-col gap-6">
+  <a routerLink="/demandes" class="text-sm text-gray-500 hover:underline"><i class="pi pi-arrow-left text-xs"></i> Retour aux demandes</a>
+
+  @if (erreur()) {
+    <div class="rounded-2xl bg-white border border-gray-100 p-8 text-center text-gray-500">{{ erreur() }}</div>
+  } @else if (demande(); as d) {
+    <div class="flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-semibold tracking-tight">{{ d.numero_suivi }}</h1>
+        <p class="text-sm text-gray-500">Créée le {{ d.date_creation | date: 'dd/MM/yyyy HH:mm' }}</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <p-tag [value]="labelStatut(d.statut)" [severity]="severite(d.statut)" />
+        @if (peutAnnuler()) {
+          <p-button label="Annuler la demande" icon="pi pi-times" severity="danger" [outlined]="true" (onClick)="ouvrirAnnulation()" />
+        }
+      </div>
+    </div>
+
+    @if (d.statut === 'annulee') {
+      <div class="rounded-xl bg-red-50 text-red-700 text-sm p-3">
+        Demande annulée le {{ d.date_annulation | date: 'dd/MM/yyyy HH:mm' }}{{ d.motif_annulation ? ' : ' + d.motif_annulation : '' }}.
+      </div>
+    }
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <section class="bg-white border border-gray-100 rounded-2xl p-6">
+        <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-4">Trajet</p>
+        <dl class="flex flex-col gap-3 text-sm">
+          <div><dt class="text-gray-400">Récupération</dt><dd class="font-medium">{{ d.adresse_recuperation }}</dd></div>
+          <div><dt class="text-gray-400">Livraison</dt><dd class="font-medium">{{ d.adresse_livraison }}</dd></div>
+          <div class="grid grid-cols-2 gap-3">
+            <div><dt class="text-gray-400">Distance estimée</dt><dd class="font-medium">{{ d.distance_estimee | number: '1.0-2' }} km</dd></div>
+            <div><dt class="text-gray-400">Zone</dt><dd class="font-medium">{{ nomZone() }}</dd></div>
+          </div>
+        </dl>
+      </section>
+
+      <section class="bg-white border border-gray-100 rounded-2xl p-6">
+        <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-4">Frais</p>
+        <dl class="flex flex-col gap-3 text-sm">
+          <div class="flex justify-between"><dt class="text-gray-500">Frais estimés</dt><dd class="font-medium">{{ d.frais_estimes | number: '1.0-2' }}</dd></div>
+          <div class="flex justify-between">
+            <dt class="text-gray-500">Frais définitifs</dt>
+            <dd class="font-medium">{{ d.frais_definitifs != null ? (d.frais_definitifs | number: '1.0-2') : 'après vérification du colis' }}</dd>
+          </div>
+          @if (d.poids_total_estime != null) {
+            <div class="flex justify-between"><dt class="text-gray-500">Poids total estimé</dt><dd class="font-medium">{{ d.poids_total_estime | number: '1.0-2' }} kg</dd></div>
+          }
+          @if (d.date_verification) {
+            <div class="flex justify-between"><dt class="text-gray-500">Vérifiée le</dt><dd>{{ d.date_verification | date: 'dd/MM/yyyy HH:mm' }}</dd></div>
+          }
+          @if (d.date_validation) {
+            <div class="flex justify-between"><dt class="text-gray-500">Validée le</dt><dd>{{ d.date_validation | date: 'dd/MM/yyyy HH:mm' }}</dd></div>
+          }
+        </dl>
+      </section>
+    </div>
+
+    @if (!estExpediteur() && d.expediteur) {
+      <section class="bg-white border border-gray-100 rounded-2xl p-6 text-sm">
+        <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">Expéditeur</p>
+        <div class="font-medium">{{ d.expediteur.nom_complet ?? d.expediteur.nom_utilisateur }}</div>
+        <div class="text-gray-500">{{ d.expediteur.type_expediteur }} · {{ d.expediteur.telephone }}</div>
+      </section>
+    }
+
+    <section class="bg-white border border-gray-100 rounded-2xl overflow-hidden">
+      <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 p-6 pb-2">Colis</p>
+      <p-table [value]="d.colis" [scrollable]="true">
+        <ng-template #header>
+          <tr><th>Nature</th><th>Poids estimé</th><th>Poids réel</th><th>Dimensions (cm)</th><th>Instructions</th><th>Statut</th></tr>
+        </ng-template>
+        <ng-template #body let-c>
+          <tr>
+            <td class="font-medium">{{ c.libelle }}</td>
+            <td>{{ c.poids_estime | number: '1.0-2' }} kg</td>
+            <td>{{ c.poids_reel != null ? (c.poids_reel | number: '1.0-2') + ' kg' : '—' }}</td>
+            <td>{{ dimensions(c) }}</td>
+            <td>{{ c.instructions || '—' }}</td>
+            <td><p-tag [value]="labelStatut(c.statut)" severity="secondary" /></td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </section>
+
+    <section class="bg-white border border-gray-100 rounded-2xl p-6">
+      <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-4">Personnes de vérification</p>
+      <ul class="flex flex-col gap-2 text-sm">
+        @for (p of d.destinataires; track p.id_destinataire) {
+          <li class="flex flex-wrap items-center gap-2">
+            <span class="font-medium">{{ p.prenom }} {{ p.nom }}</span>
+            <span class="text-gray-500">{{ p.telephone }}</span>
+            @if (p.est_principal) { <p-tag value="Principale" severity="info" /> }
+          </li>
+        }
+      </ul>
+    </section>
+
+    @if (d.livraison) {
+      <section class="bg-white border border-gray-100 rounded-2xl p-6 text-sm">
+        <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">Livraison</p>
+        <div class="flex items-center gap-2">
+          <p-tag [value]="labelStatut(d.livraison.statut)" [severity]="severite(d.livraison.statut)" />
+          @if (d.livraison.motif_inachevement) { <span class="text-gray-500">{{ d.livraison.motif_inachevement }}</span> }
+        </div>
+      </section>
+    }
+
+    @if (d.historique?.length) {
+      <section class="bg-white border border-gray-100 rounded-2xl p-6">
+        <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-4">Historique</p>
+        <ol class="flex flex-col gap-3 text-sm">
+          @for (h of d.historique; track $index) {
+            <li class="flex gap-3">
+              <span class="mt-1.5 w-2 h-2 rounded-full bg-blue-500 shrink-0"></span>
+              <div>
+                <div>
+                  @if (h.ancien_statut) { {{ labelStatut(h.ancien_statut) }} → }
+                  <span class="font-medium">{{ labelStatut(h.nouveau_statut) }}</span>
+                </div>
+                <div class="text-xs text-gray-400">
+                  {{ h.date_changement | date: 'dd/MM/yyyy HH:mm' }}{{ h.motif ? ' · ' + h.motif : '' }}
+                </div>
+              </div>
+            </li>
+          }
+        </ol>
+      </section>
+    }
+  } @else {
+    <div class="text-gray-400 text-sm">Chargement…</div>
+  }
+</div>
+
+<p-dialog [(visible)]="annulerOuvert" [modal]="true" [draggable]="false" header="Annuler la demande" [style]="{ width: '28rem' }">
+  <div class="flex flex-col gap-4">
+    <p class="text-sm text-gray-600">
+      L'annulation est définitive. Si un livreur était affecté, il sera libéré.
+    </p>
+    <div class="flex flex-col gap-1">
+      <label class="text-sm font-medium text-gray-700">Motif (facultatif)</label>
+      <textarea pTextarea [formControl]="motif" rows="3" class="w-full"></textarea>
+      @if (motif.invalid) { <small class="text-red-600">255 caractères maximum</small> }
+    </div>
+    <div class="flex justify-end gap-2">
+      <p-button type="button" label="Retour" severity="secondary" [text]="true" (onClick)="annulerOuvert.set(false)" />
+      <p-button label="Confirmer l'annulation" severity="danger" [loading]="saving()" [disabled]="motif.invalid" (onClick)="annuler()" />
+    </div>
+  </div>
+</p-dialog>

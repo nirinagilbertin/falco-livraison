@@ -1,0 +1,42 @@
+<div class="flex flex-col gap-3" [formGroup]="form()">
+  <h3 class="text-sm font-semibold text-gray-700">{{ titre() }}</h3>
+
+  <div class="flex gap-2">
+    <input
+      pInputText
+      class="flex-1"
+      placeholder="Rechercher une adresse…"
+      [ngModel]="terme()"
+      (ngModelChange)="terme.set($event)"
+      [ngModelOptions]="{ standalone: true }"
+      (keydown.enter)="$event.preventDefault(); chercher()"
+    />
+    <p-button type="button" icon="pi pi-search" severity="secondary" [loading]="recherche()" (onClick)="chercher()" />
+  </div>
+
+  @if (resultats().length) {
+    <ul class="rounded-xl border border-gray-100 divide-y divide-gray-50 max-h-44 overflow-y-auto">
+      @for (r of resultats(); track r.place_id) {
+        <li>
+          <button type="button" class="w-full text-left text-sm px-3 py-2 hover:bg-gray-50" (click)="choisir(r)">
+            {{ r.display_name }}
+          </button>
+        </li>
+      }
+    </ul>
+  } @else if (aucun()) {
+    <p class="text-xs text-gray-400">Aucun résultat. Placez le point directement sur la carte.</p>
+  }
+
+  <app-map-picker mode="point" [point]="point()" (pointChange)="surCarte($event)" />
+
+  @if (pointManquant()) {
+    <small class="text-red-600">Placez un point sur la carte (clic) ou choisissez un résultat de recherche.</small>
+  }
+
+  <div class="flex flex-col gap-1">
+    <label class="text-sm font-medium text-gray-700">Adresse (précisez au besoin)</label>
+    <input pInputText [formControl]="ctrl('adresse')" class="w-full" />
+    @if (erreurAdresse(); as m) { <small class="text-red-600">{{ m }}</small> }
+  </div>
+</div>

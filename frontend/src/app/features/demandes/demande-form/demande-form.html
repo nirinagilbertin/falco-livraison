@@ -1,0 +1,124 @@
+<div class="max-w-5xl flex flex-col gap-6">
+  <div>
+    <a routerLink="/demandes" class="text-sm text-gray-500 hover:underline"><i class="pi pi-arrow-left text-xs"></i> Mes demandes</a>
+    <h1 class="text-2xl font-semibold tracking-tight mt-1">Nouvelle demande de livraison</h1>
+    <p class="text-sm text-gray-500">
+      Aucun paiement à ce stade : les frais définitifs sont calculés après la vérification du colis par le livreur.
+    </p>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="envoyer()" class="flex flex-col gap-6">
+    <section class="bg-white border border-gray-100 rounded-2xl p-6">
+      <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-4">Adresses</p>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <app-address-picker [form]="form" suffixe="recuperation" titre="Adresse de récupération" />
+        <app-address-picker [form]="form" suffixe="livraison" titre="Adresse de livraison" />
+      </div>
+    </section>
+
+    <section class="bg-white border border-gray-100 rounded-2xl p-6 flex flex-col gap-4">
+      <div class="flex items-center justify-between">
+        <p class="text-xs font-semibold uppercase tracking-widest text-gray-400">Colis ({{ colis.length }}/20)</p>
+        <p-button type="button" label="Ajouter un colis" icon="pi pi-plus" size="small" severity="secondary" [outlined]="true" [disabled]="colis.length >= 20" (onClick)="ajouterColis()" />
+      </div>
+
+      <div formArrayName="colis" class="flex flex-col gap-4">
+        @for (c of colis.controls; track c; let i = $index) {
+          <div [formGroupName]="i" class="rounded-xl border border-gray-100 p-4 flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-semibold">Colis {{ i + 1 }}</span>
+              @if (colis.length > 1) {
+                <p-button type="button" icon="pi pi-trash" [text]="true" [rounded]="true" severity="danger" size="small" (onClick)="retirerColis(i)" />
+              }
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div class="flex flex-col gap-1 sm:col-span-2">
+                <label class="text-sm font-medium text-gray-700">Nature du colis</label>
+                <input pInputText formControlName="libelle" class="w-full" />
+                @if (errColis(i, 'libelle'); as m) { <small class="text-red-600">{{ m }}</small> }
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium text-gray-700">Poids estimé (kg)</label>
+                <p-inputnumber formControlName="poids_estime" [min]="0" [maxFractionDigits]="2" fluid />
+                @if (errColis(i, 'poids_estime'); as m) { <small class="text-red-600">{{ m }}</small> }
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3">
+              <div class="flex flex-col gap-1">
+                <label class="text-sm text-gray-500">Longueur (cm)</label>
+                <p-inputnumber formControlName="longueur" [min]="0" [maxFractionDigits]="1" fluid />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="text-sm text-gray-500">Largeur (cm)</label>
+                <p-inputnumber formControlName="largeur" [min]="0" [maxFractionDigits]="1" fluid />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="text-sm text-gray-500">Hauteur (cm)</label>
+                <p-inputnumber formControlName="hauteur" [min]="0" [maxFractionDigits]="1" fluid />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div class="flex flex-col gap-1">
+                <label class="text-sm text-gray-500">Description (facultative)</label>
+                <input pInputText formControlName="description" class="w-full" />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="text-sm text-gray-500">Instructions de manutention (facultatives)</label>
+                <input pInputText formControlName="instructions" class="w-full" />
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <section class="bg-white border border-gray-100 rounded-2xl p-6 flex flex-col gap-4">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-widest text-gray-400">Personnes de vérification ({{ destinataires.length }}/5)</p>
+          <p class="text-xs text-gray-400 mt-1">
+            À la remise, le livreur vérifiera le CIN ou le téléphone de l'une de ces personnes. La première est la personne principale.
+          </p>
+        </div>
+        <p-button type="button" label="Ajouter" icon="pi pi-plus" size="small" severity="secondary" [outlined]="true" [disabled]="destinataires.length >= 5" (onClick)="ajouterDestinataire()" />
+      </div>
+
+      <div formArrayName="destinataires" class="flex flex-col gap-4">
+        @for (d of destinataires.controls; track d; let i = $index) {
+          <div [formGroupName]="i" class="rounded-xl border border-gray-100 p-4 flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-semibold">Personne {{ i + 1 }}{{ i === 0 ? ' (principale)' : '' }}</span>
+              @if (destinataires.length > 1) {
+                <p-button type="button" icon="pi pi-trash" [text]="true" [rounded]="true" severity="danger" size="small" (onClick)="retirerDestinataire(i)" />
+              }
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium text-gray-700">Nom</label>
+                <input pInputText formControlName="nom" class="w-full" />
+                @if (errDest(i, 'nom'); as m) { <small class="text-red-600">{{ m }}</small> }
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="text-sm text-gray-500">Prénom (facultatif)</label>
+                <input pInputText formControlName="prenom" class="w-full" />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium text-gray-700">Téléphone</label>
+                <input pInputText formControlName="telephone" class="w-full" />
+                @if (errDest(i, 'telephone'); as m) { <small class="text-red-600">{{ m }}</small> }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <div class="flex justify-end gap-2">
+      <p-button type="button" label="Annuler" severity="secondary" [text]="true" routerLink="/demandes" />
+      <p-button type="submit" label="Envoyer la demande" icon="pi pi-send" [loading]="saving()" />
+    </div>
+  </form>
+</div>

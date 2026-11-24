@@ -1,0 +1,87 @@
+<div class="flex flex-col gap-6">
+  <div class="flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-semibold tracking-tight">{{ estPersonnel ? 'Demandes' : 'Mes demandes' }}</h1>
+      <p class="text-sm text-gray-500">
+        {{ estPersonnel ? "Toutes les demandes d'expédition." : 'Suivez vos demandes de livraison.' }}
+      </p>
+    </div>
+    @if (!estPersonnel) {
+      <p-button label="Nouvelle demande" icon="pi pi-plus" routerLink="/demandes/nouvelle" />
+    }
+  </div>
+
+  @if (estPersonnel) {
+    <div class="flex flex-wrap gap-3">
+      <input pInputText [formControl]="recherche" placeholder="N° de suivi, adresse, expéditeur…" class="w-full sm:w-80" />
+      <p-select
+        [options]="statuts"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Tous les statuts"
+        [showClear]="true"
+        [formControl]="filtreStatut"
+        class="w-full sm:w-56"
+      />
+    </div>
+  }
+
+  <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden">
+    <p-table
+      [value]="items()"
+      [lazy]="true"
+      (onLazyLoad)="charger($event)"
+      [paginator]="true"
+      [rows]="20"
+      [rowsPerPageOptions]="[10, 20, 50]"
+      [totalRecords]="total()"
+      [loading]="loading()"
+      [scrollable]="true"
+    >
+      <ng-template #header>
+        <tr>
+          <th>N° de suivi</th>
+          @if (estPersonnel) { <th>Expéditeur</th> }
+          <th>Trajet</th>
+          <th>Colis</th>
+          <th>Frais</th>
+          <th>Demande</th>
+          <th>Livraison</th>
+          <th>Créée le</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-d>
+        <tr>
+          <td>
+            <a [routerLink]="['/demandes', d.id_demande]" class="font-medium text-blue-600 hover:underline">{{ d.numero_suivi }}</a>
+          </td>
+          @if (estPersonnel) {
+            <td>
+              <div class="text-sm">{{ d.expediteur_nom }}</div>
+              <div class="text-xs text-gray-400">{{ d.type_expediteur }}</div>
+            </td>
+          }
+          <td class="text-sm max-w-xs">
+            <div class="truncate">{{ d.adresse_recuperation }}</div>
+            <div class="truncate text-gray-400">→ {{ d.adresse_livraison }}</div>
+          </td>
+          <td>{{ d.nb_colis }}</td>
+          <td class="whitespace-nowrap">
+            {{ (d.frais_definitifs ?? d.frais_estimes) | number: '1.0-2' }}
+            <div class="text-xs text-gray-400">{{ d.frais_definitifs != null ? 'définitifs' : 'estimés' }}</div>
+          </td>
+          <td><p-tag [value]="labelStatut(d.statut)" [severity]="severite(d.statut)" /></td>
+          <td>
+            @if (d.statut_livraison) {
+              <p-tag [value]="labelStatut(d.statut_livraison)" [severity]="severite(d.statut_livraison)" />
+            } @else { — }
+          </td>
+          <td class="text-sm text-gray-500 whitespace-nowrap">{{ d.date_creation | date: 'dd/MM/yyyy HH:mm' }}</td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr><td [attr.colspan]="estPersonnel ? 8 : 7" class="text-center py-8 text-gray-400">Aucune demande</td></tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>

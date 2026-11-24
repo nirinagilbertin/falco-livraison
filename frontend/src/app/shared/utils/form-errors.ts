@@ -22,7 +22,7 @@ function normalize(details: unknown): Record<string, string> {
 export function applyServerErrors(form: FormGroup, error: AppError): string[] {
   const nonAffectees: string[] = [];
   for (const [name, message] of Object.entries(normalize(error.details))) {
-    const ctrl = form.get(name);
+    const ctrl = form.get(name.replace(/\[(\d+)\]/g, '.$1'));
     if (ctrl) {
       ctrl.setErrors({ server: message });
       ctrl.markAsTouched();

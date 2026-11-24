@@ -55,6 +55,19 @@ export const routes: Routes = [
         canActivate: [roleGuard('administrateur', 'gestionnaire')],
         loadComponent: () => import('./features/configuration/configuration/configuration').then((m) => m.Configuration),
       },
+            {
+        path: 'demandes',
+        loadComponent: () => import('./features/demandes/demandes/demandes').then((m) => m.Demandes),
+      },
+      {
+        path: 'demandes/nouvelle',
+        canActivate: [roleGuard('expediteur')],
+        loadComponent: () => import('./features/demandes/demande-form/demande-form').then((m) => m.DemandeForm),
+      },
+      {
+        path: 'demandes/:id',
+        loadComponent: () => import('./features/demandes/demande-detail/demande-detail').then((m) => m.DemandeDetail),
+      },
     ],
   },
   { path: '**', redirectTo: '' },

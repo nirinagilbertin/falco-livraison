@@ -3,26 +3,29 @@ export type Severity = 'success' | 'info' | 'warn' | 'danger' | 'secondary';
 export function severiteStatut(s: string): Severity {
   switch (s) {
     case 'actif':
-      return 'success';
     case 'active':
-      return 'success';
     case 'disponible':
-      return 'success';
     case 'libre':
+    case 'validee':
+    case 'terminee':
+    case 'acceptee':
       return 'success';
     case 'en_service':
+    case 'en_cours':
+    case 'verifiee':
+    case 'affectee':
       return 'info';
-    case 'occupe':
-      return 'warn';
     case 'en_maintenance':
+    case 'occupe':
+    case 'en_attente':
+    case 'inachevee':
       return 'warn';
     case 'inactif':
-      return 'danger';
     case 'inactive':
-      return 'danger';
     case 'hors_service':
-      return 'danger';
     case 'suspendu':
+    case 'annulee':
+    case 'refusee':
       return 'danger';
     default:
       return 'secondary';
