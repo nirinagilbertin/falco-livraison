@@ -13,10 +13,11 @@ import { AuthService } from '../../../core/services/auth.service';
 import { DemandeService } from '../../../core/services/demande.service';
 import { NotifyService } from '../../../core/services/notify.service';
 import { labelStatut, severiteStatut } from '../../../shared/utils/statut';
+import { PaiementsDemande } from '../paiements-demande/paiements-demande';
 
 @Component({
   selector: 'app-demande-detail',
-  imports: [DatePipe, DecimalPipe, ReactiveFormsModule, RouterLink, TableModule, TagModule, ButtonModule, DialogModule, TextareaModule],
+  imports: [DatePipe, DecimalPipe, ReactiveFormsModule, RouterLink, TableModule, TagModule, ButtonModule, DialogModule, TextareaModule, PaiementsDemande],
   templateUrl: './demande-detail.html',
   styleUrl: './demande-detail.css',
 })
@@ -44,6 +45,17 @@ export class DemandeDetail {
     const z = this.demande()?.zone_recuperation;
     return (typeof z === 'string' ? z : z?.nom_zone) ?? '—';
   });
+
+  paiementsVisibles = computed(() => {
+    const d = this.demande();
+    const role = this.auth.role();
+    return !!d && (role === 'expediteur' || role === 'administrateur') && !['en_attente', 'en_cours'].includes(d.statut);
+  });
+
+  recharger() {
+    const d = this.demande();
+    if (d) this.svc.get(d.id_demande).subscribe((x) => this.demande.set(x));
+  }
 
   constructor() {
     const id = Number(this.route.snapshot.paramMap.get('id'));

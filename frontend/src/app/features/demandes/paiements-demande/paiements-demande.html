@@ -1,0 +1,81 @@
+@if (afficher()) {
+  @if (recap(); as r) {
+    <section class="bg-white border border-gray-100 rounded-2xl p-6 flex flex-col gap-4">
+      <div class="flex items-center justify-between">
+        <p class="text-xs font-semibold uppercase tracking-widest text-gray-400">Paiement</p>
+        <p-button icon="pi pi-refresh" [text]="true" [rounded]="true" severity="secondary" size="small" (onClick)="actualiser()" />
+      </div>
+
+      @if (r.statut === 'verifiee') {
+        <div class="rounded-xl bg-blue-50 p-4 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <div class="text-sm text-blue-900">Le colis a été vérifié. Frais définitifs à payer :</div>
+            <div class="text-2xl font-semibold text-blue-900">{{ r.frais_definitifs | number: '1.0-2' }}</div>
+            @if (delai(); as d) {
+              <div class="text-xs mt-1" [class]="d.depasse ? 'text-red-600' : 'text-blue-700'">{{ d.texte }}</div>
+            }
+          </div>
+          @if (peutPayerMaintenant()) {
+            <p-button label="Payer maintenant" icon="pi pi-credit-card" (onClick)="dialogOuvert.set(true)" />
+          }
+        </div>
+      } @else if (r.statut === 'validee') {
+        <div class="rounded-xl bg-green-50 text-green-800 text-sm p-3">Paiement validé. Le livreur peut récupérer le colis.</div>
+      }
+
+      @if (tentatives().length) {
+        <p-table [value]="tentatives()" [scrollable]="true">
+          <ng-template #header>
+            <tr><th>Date</th><th>Moyen de paiement</th><th>Montant</th><th>Statut</th><th>Détail</th><th></th></tr>
+          </ng-template>
+          <ng-template #body let-p>
+            <tr>
+              <td class="text-sm whitespace-nowrap">{{ p.date_creation | date: 'dd/MM/yyyy HH:mm' }}</td>
+              <td class="text-sm">{{ libelleMode(p) }}</td>
+              <td>{{ p.montant | number: '1.0-2' }}</td>
+              <td><p-tag [value]="libelleStatut(p.statut)" [severity]="severite(p.statut)" /></td>
+              <td class="text-sm text-gray-500">
+                @if (p.statut === 'valide') { Reçu {{ p.numero_recu }} } @else { {{ p.motif_echec ?? '—' }} }
+                <div class="text-xs text-gray-400">{{ p.reference_paiement }}</div>
+              </td>
+              <td>
+                @if (p.statut === 'valide') {
+                  <p-button label="Reçu" icon="pi pi-file" size="small" severity="secondary" [text]="true" (onClick)="ouvrirRecu(p)" />
+                }
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      }
+    </section>
+  }
+}
+
+<app-paiement-dialog
+  [(visible)]="dialogOuvert"
+  [idDemande]="idDemande()"
+  [montant]="recap()?.frais_definitifs ?? 0"
+  (paye)="surPaiement($event)"
+  (echec)="actualiser()"
+/>
+
+<p-dialog [(visible)]="recuOuvert" [modal]="true" [draggable]="false" header="Reçu de paiement" [style]="{ width: '26rem' }">
+  @if (recu(); as c) {
+    <dl class="flex flex-col gap-3 text-sm">
+      <div class="flex justify-between"><dt class="text-gray-500">N° de reçu</dt><dd class="font-medium">{{ c.numero_recu }}</dd></div>
+      <div class="flex justify-between"><dt class="text-gray-500">Référence</dt><dd class="font-mono text-xs">{{ c.reference_paiement }}</dd></div>
+      <div class="flex justify-between"><dt class="text-gray-500">Demande</dt><dd>{{ c.numero_suivi }}</dd></div>
+      @if (c.expediteur) {
+        <div class="flex justify-between"><dt class="text-gray-500">Expéditeur</dt><dd>{{ c.expediteur }}</dd></div>
+      }
+      <div class="flex justify-between"><dt class="text-gray-500">Mode</dt><dd>{{ c.mode_paiement === 'carte' ? 'Carte bancaire' : 'Mobile money' }}</dd></div>
+      <div class="flex justify-between"><dt class="text-gray-500">Date</dt><dd>{{ c.date_paiement | date: 'dd/MM/yyyy HH:mm' }}</dd></div>
+      <div class="flex justify-between pt-3 border-t border-gray-100 text-base font-semibold">
+        <dt>Montant payé</dt><dd>{{ c.montant | number: '1.0-2' }}</dd>
+      </div>
+    </dl>
+  }
+  <div class="flex justify-end mt-5">
+    <p-button label="Fermer" (onClick)="recuOuvert.set(false)" />
+  </div>
+</p-dialog>

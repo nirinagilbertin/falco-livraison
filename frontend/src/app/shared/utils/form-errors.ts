@@ -42,6 +42,8 @@ export function fieldError(ctrl: AbstractControl | null): string | null {
   if (e['email']) return 'Adresse e-mail invalide';
   if (e['minlength']) return `Minimum ${e['minlength'].requiredLength} caractères`;
   if (e['min']) return `Valeur minimale : ${e['min'].min}`;
+  if (e['chiffres']) return 'Nombre de chiffres incorrect';
+  if (e['pattern']) return 'Format invalide';
   return 'Valeur invalide';
 }
 

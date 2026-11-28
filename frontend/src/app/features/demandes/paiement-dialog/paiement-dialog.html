@@ -1,0 +1,61 @@
+<p-dialog [(visible)]="visible" [modal]="true" [draggable]="false" header="Payer la livraison" [style]="{ width: '30rem' }" (onHide)="reinitialiser()">
+  <form [formGroup]="form" (ngSubmit)="envoyer()" class="flex flex-col gap-4">
+    <div class="rounded-xl bg-gray-50 p-4 flex items-center justify-between">
+      <span class="text-sm text-gray-500">Montant à payer</span>
+      <span class="text-xl font-semibold">{{ montant() | number: '1.0-2' }}</span>
+    </div>
+
+    @if (erreur()) {
+      <div class="rounded-xl bg-red-50 text-red-700 text-sm p-3">{{ erreur() }}</div>
+    }
+
+    <p-selectbutton [options]="modes" optionLabel="label" optionValue="value" formControlName="mode_paiement" [allowEmpty]="false" fluid />
+
+    @if (form.controls.mode_paiement.value === 'carte') {
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium text-gray-700">Numéro de carte</label>
+        <input pInputText formControlName="numero_carte" inputmode="numeric" autocomplete="cc-number" placeholder="1234 5678 9012 3456" (input)="formaterCarte()" class="w-full" />
+        @if (err('numero_carte'); as m) { <small class="text-red-600">{{ m }}</small> }
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium text-gray-700">Titulaire</label>
+        <input pInputText formControlName="titulaire" autocomplete="cc-name" class="w-full" />
+        @if (err('titulaire'); as m) { <small class="text-red-600">{{ m }}</small> }
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-medium text-gray-700">Expiration</label>
+          <input pInputText formControlName="expiration" inputmode="numeric" autocomplete="cc-exp" placeholder="MM/AAAA" (input)="formaterExpiration()" class="w-full" />
+          @if (err('expiration'); as m) { <small class="text-red-600">{{ m }}</small> }
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-medium text-gray-700">Cryptogramme</label>
+          <input pInputText type="password" formControlName="cryptogramme" inputmode="numeric" autocomplete="cc-csc" maxlength="4" class="w-full" />
+          @if (err('cryptogramme'); as m) { <small class="text-red-600">{{ m }}</small> }
+        </div>
+      </div>
+    } @else {
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium text-gray-700">Opérateur</label>
+        <p-select [options]="operateurs" optionLabel="label" optionValue="value" formControlName="operateur" fluid />
+        @if (err('operateur'); as m) { <small class="text-red-600">{{ m }}</small> }
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium text-gray-700">Numéro de téléphone</label>
+        <input pInputText formControlName="numero" inputmode="tel" autocomplete="tel" placeholder="034 12 345 67" class="w-full" />
+        @if (err('numero'); as m) { <small class="text-red-600">{{ m }}</small> }
+      </div>
+    }
+
+    <small class="text-gray-400">
+      Paiement simulé : aucune transaction réelle. Carte de test : 4111 1111 1111 1111 (succès), finissant par 0002 (refusée) ou 9995 (fonds insuffisants).
+    </small>
+
+    <div class="flex justify-end gap-2 pt-2">
+      <p-button type="button" label="Annuler" severity="secondary" [text]="true" (onClick)="visible.set(false)" />
+      <p-button type="submit" label="Payer" icon="pi pi-lock" [loading]="saving()" />
+    </div>
+  </form>
+</p-dialog>
